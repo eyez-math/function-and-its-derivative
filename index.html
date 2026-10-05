@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<!-- GitHub-ready build: 20261005-2205 -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>פונקציה, נגזרת ונגזרת שנייה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&family=STIX+Two+Text:ital,wght@1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f1f3f6; --panel:#ffffff; --ink:#1b2430; --muted:#5d6878; --line:#d9dee6;
+  --grid:#edf0f4; --axis:#3a4452; --tan:#8a94a3; --soft:#eef2f7; --hover:#f3f6f9;
+  --cf:#1f4e8c; --cd1:#0a7d6e; --cd2:#9b3b86;
+  --pos:rgba(10,125,110,.12); --neg:rgba(214,120,30,.15); --band:rgba(31,78,140,.12);
+  --posInk:#0a7d6e; --negInk:#b8620f; --sel:rgba(31,78,140,.10);
+  --accent:#1f4e8c; --ok:#0a7d6e; --bad:#b33a2b;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#141922; --panel:#1c232e; --ink:#e7ecf3; --muted:#9aa6b6; --line:#2f3947;
+    --grid:#232c38; --axis:#b5c0ce; --tan:#8d99aa; --soft:#232c38; --hover:#222a35;
+    --cf:#86b4ff; --cd1:#4fd1bd; --cd2:#e391d4;
+    --pos:rgba(79,209,189,.14); --neg:rgba(240,160,80,.17); --band:rgba(134,180,255,.16);
+    --posInk:#4fd1bd; --negInk:#f0a050; --sel:rgba(134,180,255,.15);
+    --accent:#86b4ff; --ok:#4fd1bd; --bad:#ff8a7a;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141922; --panel:#1c232e; --ink:#e7ecf3; --muted:#9aa6b6; --line:#2f3947;
+  --grid:#232c38; --axis:#b5c0ce; --tan:#8d99aa; --soft:#232c38; --hover:#222a35;
+  --cf:#86b4ff; --cd1:#4fd1bd; --cd2:#e391d4;
+  --pos:rgba(79,209,189,.14); --neg:rgba(240,160,80,.17); --band:rgba(134,180,255,.16);
+  --posInk:#4fd1bd; --negInk:#f0a050; --sel:rgba(134,180,255,.15);
+  --accent:#86b4ff; --ok:#4fd1bd; --bad:#ff8a7a;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Rubik,"Segoe UI",Arial,sans-serif}
+.wrap{max-width:1200px;margin:0 auto;padding:20px 16px 48px}
+.m{font-family:"STIX Two Text","Times New Roman",serif;font-style:italic;font-weight:500;direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+.m sup{font-size:.7em}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:16px}
+h1{margin:0;font-size:clamp(1.4rem,2.7vw,2rem);font-weight:700;letter-spacing:-.01em;line-height:1.2}
+.sub{margin:6px 0 0;color:var(--muted);max-width:62ch}
+.tabs{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px}
+.tabs button{border:0;background:none;color:var(--muted);padding:8px 20px;border-radius:999px;cursor:pointer;font-weight:500}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--panel)}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 12px;font-size:.93rem;cursor:pointer;min-height:36px}
+.chip:hover{background:var(--hover)}
+.chip[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);color:var(--accent);font-weight:500}
+.chiplab{color:var(--muted);font-size:.9rem;margin-inline-end:4px}
+
+.top{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.fml{font-size:1.15rem}
+.fml.customFormulaSet{display:grid;gap:4px;direction:ltr;text-align:left;min-width:280px}
+.fml.customFormulaSet .formulaLine{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.fml.customFormulaSet math-display{font-size:1.08em}
+.note{color:var(--muted);font-size:.95rem;margin:0 0 12px;max-width:80ch}
+
+.grid{display:grid;grid-template-columns:minmax(300px,1fr) minmax(0,1.55fr);gap:16px;align-items:start}
+.grid .side{order:-1}
+@media (max-width:880px){.grid{grid-template-columns:1fr}.grid .side{order:0}}
+
+.graphs{padding:6px 10px 14px}
+.gbox{position:relative}
+.gbox + .gbox{border-top:1px solid var(--line)}
+.gname{position:absolute;top:8px;right:16px;font-size:1.05rem;background:var(--panel);padding:0 6px;border-radius:4px;pointer-events:none}
+canvas{display:block;width:100%;height:190px;touch-action:pan-y}
+#explore canvas{cursor:ew-resize}
+@media (max-width:600px){canvas{height:155px}}
+.sliderRow{display:flex;align-items:center;gap:10px;padding:10px 6px 0}
+.sliderRow input{flex:1;accent-color:var(--accent);min-height:28px}
+.toggle{display:flex;align-items:center;gap:6px;font-size:.92rem;color:var(--muted);white-space:nowrap;cursor:pointer}
+
+.side{display:flex;flex-direction:column;gap:14px}
+.readout{padding:14px 16px}
+.rx{font-size:1.05rem;margin-bottom:8px}
+.ro{display:grid;grid-template-columns:12px auto 1fr;gap:4px 10px;align-items:baseline;padding:5px 0;border-top:1px solid var(--line)}
+.ro:first-of-type{border-top:0}
+.dot{width:10px;height:10px;border-radius:50%;align-self:center}
+.rt{font-size:.94rem}
+.feat{margin:10px 0 0;padding:10px 12px;background:var(--soft);border-radius:8px;font-size:.94rem;line-height:1.55;min-height:calc(4 * 1.55em + 20px)}
+.feat.empty{background:none;color:var(--muted)}
+.ro .m{font-variant-numeric:tabular-nums}
+.feat p{margin:0}
+.feat p + p{margin-top:6px}
+
+.tablewrap{padding:12px 12px 14px}
+.tablewrap h2{font-size:1.05rem;margin:2px 4px 2px}
+.tablewrap .hint{margin:0 4px 8px}
+.rel{width:100%;border-collapse:collapse;font-size:.9rem}
+.rel th{font-weight:500;padding:6px 4px;border-bottom:2px solid var(--line)}
+.rel td{padding:9px 4px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle}
+.rel .arr{color:var(--muted);width:18px;padding:0}
+.rel tr.row{cursor:pointer}
+.rel tr.row:hover td{background:var(--hover)}
+.rel tr.row[aria-pressed="true"] td{background:var(--sel)}
+.rel tr.row[aria-pressed="true"] td:first-child{box-shadow:inset -3px 0 0 var(--accent)}
+.hint{color:var(--muted);font-size:.9rem}
+.hlnote{margin:10px 4px 0;font-size:.94rem;line-height:1.55;min-height:calc(3 * 1.55em)}
+.principle{padding:12px 16px;border-inline-start:4px solid var(--ink);font-size:.94rem}
+.principle strong{display:block;margin-bottom:4px}
+
+/* practice */
+.ptop{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-bottom:12px}
+.score{font-weight:500}
+.qcard{padding:18px 18px 20px;max-width:900px}
+.qprompt{font-size:1.08rem;margin:0 0 12px}
+.qgraphs.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:760px){.qgraphs.three{grid-template-columns:1fr}}
+.qg{border:1px solid var(--line);border-radius:10px;padding:8px 6px 10px}
+.qg canvas{height:170px}
+.qgt{font-weight:500;padding:0 8px 2px}
+.roles{display:flex;gap:6px;justify-content:center;margin-top:8px}
+.roles .chip{min-width:62px;font-size:1rem}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+@media (max-width:600px){.opts{grid-template-columns:1fr}}
+.opt{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:12px 14px;text-align:right;cursor:pointer;min-height:50px}
+.opt:hover:not(:disabled){background:var(--hover)}
+.opt:disabled{cursor:default}
+.opt.ok{border-color:var(--ok);box-shadow:inset 0 0 0 1px var(--ok)}
+.opt.ok::after{content:"  ✓ התשובה הנכונה";color:var(--ok);font-weight:500}
+.opt.bad{border-color:var(--bad);box-shadow:inset 0 0 0 1px var(--bad)}
+.opt.bad::after{content:"  ✗ הבחירה שלך";color:var(--bad);font-weight:500}
+.primary{margin-top:14px;border:0;background:var(--ink);color:var(--panel);padding:10px 22px;border-radius:999px;cursor:pointer;font-weight:500;min-height:44px}
+.fb{margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--soft);border-inline-start:4px solid var(--ok)}
+.fb.no{border-inline-start-color:var(--bad)}
+.reveal{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:4px 8px 8px}
+.reveal .rlab{color:var(--muted);font-size:.9rem;padding:6px 8px 0}
+.reveal canvas{height:160px}
+.qwarn{color:var(--bad);margin:8px 0 0;font-size:.94rem}
+[hidden]{display:none!important}
+
+/* custom function input */
+.customBox{margin:0 0 14px;padding:14px 16px;display:grid;gap:12px}
+.customHead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.customHead strong{font-size:1rem}
+.customTypes{display:flex;gap:6px;flex-wrap:wrap}
+.customTypes .chip{min-width:76px;text-align:center}
+.mathEntry{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;direction:ltr}
+.mathEntry .lhs{font-size:1.22rem;padding-top:12px}
+#customExpr{width:100%;display:block}
+.customActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;direction:rtl}
+.customActions .primary{margin:0}
+.secondary{border:1px solid var(--line);background:var(--panel);padding:9px 16px;border-radius:999px;cursor:pointer;min-height:42px}
+.customMsg{font-size:.9rem;color:var(--muted);min-height:1.4em}
+.customMsg.err{color:var(--bad)}
+.customConst{font-size:.88rem;color:var(--muted);margin:0}
+@media(max-width:760px){.mathEntry{grid-template-columns:1fr}.mathEntry .lhs{text-align:left;padding-top:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>הגרף, הנגזרת והנגזרת השנייה</h1>
+      <p class="sub">שלושה גרפים שמספרים את אותו סיפור. גררו על אחד מהם וראו מה קורה באותו <span class="m">x</span> בשני האחרים.</p>
+    </div>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tabE" aria-selected="true">חקירה</button>
+      <button role="tab" id="tabP" aria-selected="false">תרגול</button>
+    </div>
+  </header>
+
+  <!-- ===== חקירה ===== -->
+  <section id="explore">
+    <div class="top">
+      <div class="chips" id="presets"><span class="chiplab">פונקציה:</span></div>
+      <div class="fml" id="fml"></div>
+    </div>
+    <p class="note" id="note"></p>
+
+    <div class="panel customBox" id="customBox" hidden>
+      <div class="customHead">
+        <strong>הזנת פונקציה אישית</strong>
+        <div class="customTypes" id="customTypes" aria-label="מה מזינים">
+          <button class="chip" data-kind="f" aria-pressed="true"><span class="m">f(x)</span></button>
+          <button class="chip" data-kind="d1" aria-pressed="false"><span class="m">f′(x)</span></button>
+          <button class="chip" data-kind="d2" aria-pressed="false"><span class="m">f″(x)</span></button>
+        </div>
+      </div>
+      <div class="mathEntry">
+        <span class="lhs m" id="customLhs">f(x) =</span>
+        <math-keyboard-field id="customExpr" function-mode placeholder="למשל: x³ − 3x"></math-keyboard-field>
+      </div>
+      <div class="customActions">
+        <button class="primary" id="applyCustom">הצג ונתח</button>
+        <button class="secondary" id="clearCustom">ניקוי</button>
+        <span class="customMsg" id="customMsg"></span>
+      </div>
+      <p class="customConst" id="customConst" hidden>כאשר מזינים נגזרת ולא את הפונקציה עצמה, קבועי האינטגרציה אינם ידועים. האפליקציה בוחרת קבועים נוחים להצגה, בלי לשנות את הקשרים בין הנגזרות.</p>
+    </div>
+    <div class="grid">
+      <div class="panel graphs">
+        <div class="gbox"><span class="gname m" style="color:var(--cf)">f(x)</span><canvas id="cF" aria-label="גרף הפונקציה"></canvas></div>
+        <div class="gbox"><span class="gname m" style="color:var(--cd1)">f′(x)</span><canvas id="cD1" aria-label="גרף הנגזרת"></canvas></div>
+        <div class="gbox"><span class="gname m" style="color:var(--cd2)">f″(x)</span><canvas id="cD2" aria-label="גרף הנגזרת השנייה"></canvas></div>
+        <div class="sliderRow">
+          <input type="range" id="xs" dir="ltr" aria-label="ערך x">
+          <label class="toggle"><input type="checkbox" id="tan" checked> משיקים</label>
+        </div>
+      </div>
+      <div class="side">
+        <div class="panel readout" id="readout" aria-live="polite"></div>
+        <div class="panel tablewrap">
+          <h2>טבלת הקשרים</h2>
+          <p class="hint">לחצו על שורה כדי לראות אותה על הגרפים.</p>
+          <table class="rel">
+            <thead><tr>
+              <th><span class="m">f(x)</span></th><th></th>
+              <th><span class="m">f′(x)</span></th><th></th>
+              <th><span class="m">f″(x)</span></th>
+            </tr></thead>
+            <tbody id="relBody"></tbody>
+          </table>
+          <p class="hlnote" id="hlNote"></p>
+        </div>
+        <div class="panel principle">
+          <strong>עיקרון מנחה</strong>
+          הקשר בין <span class="m">f′</span> ל־<span class="m">f</span> חוזר על עצמו שלב אחד למעלה, בין <span class="m">f″</span> ל־<span class="m">f′</span>. עלייה וירידה של <span class="m">f′</span> קובעות את הקעירות של <span class="m">f</span>, ונקודת קיצון של <span class="m">f′</span> היא נקודת פיתול של <span class="m">f</span>.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== תרגול ===== -->
+  <section id="practice" hidden>
+    <div class="ptop">
+      <div class="chips" id="qtypes"><span class="chiplab">סוג שאלה:</span></div>
+      <div class="score" id="score">נכון: 0 מתוך 0</div>
+    </div>
+    <div id="qArea"></div>
+  </section>
+</div>
+
+<script src="math-keyboard.js?v=20261005-2205"></script>
+<script>
+/* ================= עזרים ================= */
+const $ = s => document.querySelector(s);
+const mt = s => `<span class="m">${s}</span>`;
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const ri = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+const shuffle = arr => { const r = arr.slice(); for (let i=r.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]]; } return r; };
+function el(tag, cls, html){ const e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; }
+const fmt = v => { if (Math.abs(v) < 5e-4) v = 0; return v.toFixed(2).replace('-', '−'); };
+
+
+/* ================= פונקציה אישית + מקלדת מתמטית ================= */
+const CUSTOM = { kind:'f', active:false, expr:'', latex:'' };
+
+function normalizeExpr(raw){
+  let s=String(raw||'').trim()
+    .replace(/[−–—]/g,'-').replace(/[×·]/g,'*').replace(/÷/g,'/')
+    .replace(/π/g,'pi').replace(/√/g,'sqrt')
+    .replace(/\\left|\\right/g,'').replace(/\|([^|]+)\|/g,'abs($1)');
+  s=s.replace(/\\operatorname\{abs\}/g,'abs').replace(/\\ln/g,'ln').replace(/\\sin/g,'sin').replace(/\\cos/g,'cos').replace(/\\tan/g,'tan');
+  s=s.replace(/\s+/g,'');
+  // MathLive ascii-math + כתיבה טבעית: 2x, 3(x+1), x(x-1), 2sin(x)
+  s=s.replace(/(\d|x|pi|e|\))(?=(x|pi|e|\(|sin|cos|tan|sqrt|abs|ln|exp))/g,'$1*');
+  s=s.replace(/(x|pi|e|\))(?=\d)/g,'$1*');
+  return s;
+}
+function tokenizeExpr(raw){
+  const src=normalizeExpr(raw); if(!src) throw new Error('יש להזין ביטוי.');
+  if(src.length>180) throw new Error('הביטוי ארוך מדי.');
+  const tokens=[]; let i=0;
+  while(i<src.length){
+    const rest=src.slice(i), nm=rest.match(/^\d+(?:\.\d+)?/), id=rest.match(/^(sin|cos|tan|sqrt|abs|ln|exp|pi|e|x)/);
+    if(nm){ tokens.push({t:'num',v:+nm[0]}); i+=nm[0].length; continue; }
+    if(id){ tokens.push({t:'id',v:id[0]}); i+=id[0].length; continue; }
+    const ch=src[i]; if('+-*/^()'.includes(ch)){ tokens.push({t:ch,v:ch}); i++; continue; }
+    throw new Error(`התו „${ch}” אינו נתמך.`);
+  }
+  return tokens;
+}
+function parseExprAst(raw){
+  const tokens=tokenizeExpr(raw); let k=0, peek=t=>tokens[k]?.t===t, take=t=>peek(t)?tokens[k++]:null;
+  function primary(){
+    const n=take('num'); if(n) return {t:'num',v:n.v};
+    const id=take('id');
+    if(id){
+      if(id.v==='x') return {t:'x'};
+      if(id.v==='pi') return {t:'num',v:Math.PI,s:'\\pi'};
+      if(id.v==='e') return {t:'num',v:Math.E,s:'e'};
+      if(!take('(')) throw new Error(`אחרי ${id.v} יש לפתוח סוגריים.`);
+      const a=expression(); if(!take(')')) throw new Error('חסר סוגר סוגר ).');
+      return {t:'fn',n:id.v,a};
+    }
+    if(take('(')){ const a=expression(); if(!take(')')) throw new Error('חסר סוגר סוגר ).'); return a; }
+    throw new Error('הביטוי אינו שלם.');
+  }
+  function power(){ let a=primary(); if(take('^')) a={t:'op',o:'^',a,b:unary()}; return a; }
+  function unary(){ if(take('+')) return unary(); if(take('-')) return {t:'neg',a:unary()}; return power(); }
+  function term(){ let a=unary(); while(peek('*')||peek('/')){ const o=tokens[k++].t; a={t:'op',o,a,b:unary()}; } return a; }
+  function expression(){ let a=term(); while(peek('+')||peek('-')){ const o=tokens[k++].t; a={t:'op',o,a,b:term()}; } return a; }
+  const ast=expression(); if(k<tokens.length) throw new Error('לא הצלחתי לקרוא את כל הביטוי.'); return ast;
+}
+function evalAst(ast,x){
+  switch(ast.t){
+    case 'num': return ast.v; case 'x': return x; case 'neg': return -evalAst(ast.a,x);
+    case 'op': { const a=evalAst(ast.a,x),b=evalAst(ast.b,x); return ast.o==='+'?a+b:ast.o==='-'?a-b:ast.o==='*'?a*b:ast.o==='/'?a/b:Math.pow(a,b); }
+    case 'fn': { const a=evalAst(ast.a,x),F={sin:Math.sin,cos:Math.cos,tan:Math.tan,sqrt:Math.sqrt,abs:Math.abs,ln:Math.log,exp:Math.exp}[ast.n]; return F(a); }
+  }
+}
+function compileExpr(raw){ const ast=parseExprAst(raw); return x=>{ try{ const y=evalAst(ast,x); return Number.isFinite(y)?y:NaN; }catch{return NaN;} }; }
+
+// ממיר ביטוי לפולינום כאשר הדבר אפשרי. כך אפשר להציג במדויק f,f′,f″
+// גם כאשר המשתמש הזין דווקא נגזרת ראשונה או שנייה.
+function polyTrim(p){ let r=p.slice(); while(r.length>1&&Math.abs(r[r.length-1])<1e-11) r.pop(); return r.map(v=>Math.abs(v)<1e-11?0:v); }
+function polyAdd(a,b,sgn=1){ const n=Math.max(a.length,b.length),r=Array(n).fill(0); for(let i=0;i<n;i++)r[i]=(a[i]||0)+sgn*(b[i]||0); return polyTrim(r); }
+function polyMul(a,b){ const r=Array(a.length+b.length-1).fill(0); a.forEach((v,i)=>b.forEach((w,j)=>r[i+j]+=v*w)); return polyTrim(r); }
+function astToPoly(a){
+  if(a.t==='num') return [a.v]; if(a.t==='x') return [0,1]; if(a.t==='neg') return astToPoly(a.a)?.map(v=>-v) || null;
+  if(a.t!=='op') return null;
+  const A=astToPoly(a.a),B=astToPoly(a.b); if(!A||!B) return null;
+  if(a.o==='+') return polyAdd(A,B); if(a.o==='-') return polyAdd(A,B,-1); if(a.o==='*') return polyMul(A,B);
+  if(a.o==='/'){ if(B.length!==1||Math.abs(B[0])<1e-12)return null; return A.map(v=>v/B[0]); }
+  if(a.o==='^'){ if(B.length!==1||!Number.isInteger(B[0])||B[0]<0||B[0]>12)return null; let r=[1]; for(let i=0;i<B[0];i++)r=polyMul(r,A); return r; }
+  return null;
+}
+function polyD(c){ return c.slice(1).map((v,i)=>v*(i+1)).length?c.slice(1).map((v,i)=>v*(i+1)):[0]; }
+function polyInt0(c){ return [0,...c.map((v,i)=>v/(i+1))]; }
+function numLatex(v){
+  if(Math.abs(v-Math.round(v))<1e-10) return String(Math.round(v));
+  for(let d=2;d<=12;d++){ const n=Math.round(v*d); if(Math.abs(v-n/d)<1e-9){ const g=(a,b)=>b?g(b,a%b):Math.abs(a),q=g(n,d); return `\\frac{${n/q}}{${d/q}}`; } }
+  return String(+v.toFixed(5));
+}
+function polyLatex(c){
+  c=polyTrim(c); const parts=[];
+  for(let i=c.length-1;i>=0;i--){ let v=c[i]; if(Math.abs(v)<1e-11) continue; const neg=v<0; v=Math.abs(v); let term='';
+    if(i===0) term=numLatex(v); else { if(Math.abs(v-1)>1e-11) term=numLatex(v); term += i===1?'x':`x^{${i}}`; }
+    parts.push({neg,term});
+  }
+  if(!parts.length)return '0';
+  return parts.map((p,i)=>(i===0?(p.neg?'-':''):(p.neg?' - ':' + '))+p.term).join('');
+}
+function symbolicSet(kind, ascii, enteredLatex){
+  let poly=null; try{ poly=astToPoly(parseExprAst(ascii)); }catch{}
+  if(poly){
+    let F,D1,D2;
+    if(kind==='f'){ F=poly; D1=polyD(F); D2=polyD(D1); }
+    else if(kind==='d1'){ D1=poly; F=polyInt0(D1); D2=polyD(D1); }
+    else { D2=poly; D1=polyInt0(D2); F=polyInt0(D1); }
+    return {f:polyLatex(F),d1:polyLatex(D1),d2:polyLatex(D2),exact:true};
+  }
+  const L=enteredLatex || String(ascii).replace(/\*/g,'\\cdot ');
+  if(kind==='f') return {f:L,d1:`\\frac{d}{dx}\\left(${L}\\right)`,d2:`\\frac{d^2}{dx^2}\\left(${L}\\right)`,exact:false};
+  if(kind==='d1') return {f:`\\int \\left(${L}\\right)\\,dx`,d1:L,d2:`\\frac{d}{dx}\\left(${L}\\right)`,exact:false};
+  return {f:`\\int\\!\\int \\left(${L}\\right)\\,dx\\,dx`,d1:`\\int \\left(${L}\\right)\\,dx`,d2:L,exact:false};
+}
+function renderCustomFormulas(set){
+  const fml=$('#fml'); fml.className='fml customFormulaSet';
+  fml.innerHTML=`<div class="formulaLine"><math-display value="f(x)=${set.f.replace(/"/g,'&quot;')}"></math-display></div>`+
+    `<div class="formulaLine"><math-display value="f'(x)=${set.d1.replace(/"/g,'&quot;')}"></math-display></div>`+
+    `<div class="formulaLine"><math-display value="f''(x)=${set.d2.replace(/"/g,'&quot;')}"></math-display></div>`;
+}
+function numDeriv(g,x,span,order=1){ const h=Math.max(1e-5,Math.abs(span)*2e-5)*(1+Math.abs(x)*0.03); if(order===1)return(g(x+h)-g(x-h))/(2*h); return(g(x+h)-2*g(x)+g(x-h))/(h*h); }
+function sampledIntegral(g, domain, n=5000){
+  const [a,b]=domain,h=(b-a)/n,ys=Array(n+1),vals=Array(n+1); let acc=0; ys[0]=g(a); vals[0]=0;
+  for(let i=1;i<=n;i++){ const x=a+i*h; ys[i]=g(x); const y0=ys[i-1],y1=ys[i]; acc+=(Number.isFinite(y0)&&Number.isFinite(y1))?(y0+y1)*h/2:0; vals[i]=acc; }
+  const interp=x=>{ const t=clamp((x-a)/h,0,n),i=Math.min(n-1,Math.floor(t)),q=t-i; return vals[i]*(1-q)+vals[i+1]*q; };
+  const z=interp(clamp(0,a,b)); return x=>interp(x)-z; // קבוע אינטגרציה נבחר כך שב־x=0 הערך 0
+}
+function exprNumbers(raw){
+  return (String(raw).match(/(?:^|[^A-Za-z])(-?\d+(?:\.\d+)?)/g)||[])
+    .map(t=>parseFloat(t.match(/-?\d+(?:\.\d+)?/)[0])).filter(Number.isFinite);
+}
+function finiteAt(g,x){ try{ const y=g(x); return Number.isFinite(y) && Math.abs(y)<1e14; }catch{ return false; } }
+function scanRootsSafe(g,a,b,N=3200){
+  const out=[], h=(b-a)/N; let px=a, py; try{py=g(px)}catch{py=NaN}
+  for(let i=1;i<=N;i++){
+    const x=a+i*h; let y; try{y=g(x)}catch{y=NaN}
+    if(Number.isFinite(py)&&Number.isFinite(y)){
+      if(Math.abs(py)<1e-7) out.push(px);
+      if(py*y<0){
+        let l=px,r=x,fl=py;
+        for(let k=0;k<42;k++){ const m=(l+r)/2; let fm; try{fm=g(m)}catch{fm=NaN} if(!Number.isFinite(fm)) break; if(fl*fm<=0) r=m; else {l=m;fl=fm;} }
+        out.push((l+r)/2);
+      }
+    }
+    px=x; py=y;
+  }
+  out.sort((x,y)=>x-y); return out.filter((x,i)=>!i||Math.abs(x-out[i-1])>(b-a)*1e-4);
+}
+function autoCustomDomain(kind, raw, g){
+  const nums=exprNumbers(raw), biggest=nums.length?Math.max(...nums.map(Math.abs)):0;
+  // המספרים שהוקלדו הם רמז חשוב: x-20, sqrt(x-20), 1/(x-20) וכו׳.
+  const R=Math.min(220, Math.max(40, biggest*1.35+8));
+  const probeSpan=2*R;
+  const dg=x=>numDeriv(g,x,probeSpan,1), d2g=x=>numDeriv(g,x,probeSpan,2);
+  const featureFns=kind==='f'?[dg,d2g]:kind==='d1'?[g,dg]:[g];
+  const feats=[]; featureFns.forEach(fn=>feats.push(...scanRootsSafe(fn,-R,R,4200)));
+
+  // מאתרים קצוות אמיתיים של תחום ההגדרה (למשל sqrt(x) מתחילה ב־0).
+  const N=5000,h=2*R/N; let first=null,last=null;
+  for(let i=0;i<=N;i++){ const x=-R+i*h; if(finiteAt(g,x)){ if(first===null) first=x; last=x; } }
+  if(first===null) throw new Error('לא נמצאו ערכים ממשיים שבהם הפונקציה מוגדרת.');
+  let leftBound = first>-R+h*2 ? first : null;
+  let rightBound = last<R-h*2 ? last : null;
+
+  // משפרים את דיוק קצה תחום ההגדרה בבינארי.
+  if(leftBound!==null){ let lo=Math.max(-R,leftBound-h),hi=leftBound; for(let k=0;k<45;k++){ const m=(lo+hi)/2; if(finiteAt(g,m)) hi=m; else lo=m; } leftBound=hi; }
+  if(rightBound!==null){ let lo=rightBound,hi=Math.min(R,rightBound+h); for(let k=0;k<45;k++){ const m=(lo+hi)/2; if(finiteAt(g,m)) lo=m; else hi=m; } rightBound=lo; }
+
+  const anchors=feats.filter(x=>Number.isFinite(x));
+  // גם קבועים גדולים בביטוי צריכים להיכנס למסך, אפילו אם הם אסימפטוטה ולא קיצון.
+  if(biggest>8){ anchors.push(biggest,-biggest); }
+  if(leftBound!==null) anchors.push(leftBound); if(rightBound!==null) anchors.push(rightBound);
+
+  let a,b;
+  if(anchors.length){
+    let mn=Math.min(...anchors), mx=Math.max(...anchors);
+    let span=Math.max(8,mx-mn); const pad=Math.max(2,span*.22); a=mn-pad; b=mx+pad;
+  }else { a=-10; b=10; }
+  if(leftBound!==null) a=leftBound;
+  if(rightBound!==null) b=rightBound;
+  a=Math.max(-R,a); b=Math.min(R,b);
+  if(b-a<6){ const m=(a+b)/2; a=m-3; b=m+3; if(leftBound!==null)a=Math.max(a,leftBound); if(rightBound!==null)b=Math.min(b,rightBound); }
+  return [a,b];
+}
+function customModel(kind, raw){
+  const g=compileExpr(raw), domain=autoCustomDomain(kind,raw,g), span=domain[1]-domain[0]; let f,d1,d2;
+  if(kind==='f'){ f=g; d1=x=>numDeriv(f,x,span,1); d2=x=>numDeriv(f,x,span,2); }
+  else if(kind==='d1'){ d1=g; d2=x=>numDeriv(d1,x,span,1); f=sampledIntegral(d1,domain); }
+  else { d2=g; d1=sampledIntegral(d2,domain); f=sampledIntegral(d1,domain); }
+  // אין יותר פסילה של פונקציה רק משום שהיא אינה מוגדרת בכל החלון.
+  let good=0; for(let i=0;i<=120;i++){ const x=domain[0]+span*i/120; if([f(x),d1(x),d2(x)].some(Number.isFinite)) good++; }
+  if(good<4) throw new Error('לא הצלחתי למצוא תחום ממשי שימושי לפונקציה הזאת.');
+  return {f,d1,d2,domain,custom:true};
+}
+function buildMathKeyboard(){
+  const field=$('#customExpr');
+  $('#customTypes').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{
+    CUSTOM.kind=b.dataset.kind; $('#customTypes').querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+    $('#customLhs').textContent={f:'f(x) =',d1:'f′(x) =',d2:'f″(x) ='}[CUSTOM.kind];
+    $('#customConst').hidden=CUSTOM.kind==='f'; field.focus();
+  });
+  $('#clearCustom').onclick=()=>{ field.value=''; $('#customMsg').textContent=''; field.focus(); };
+  $('#applyCustom').onclick=applyCustom;
+}
+function applyCustom(){
+  const field=$('#customExpr'),msg=$('#customMsg'); msg.classList.remove('err');
+  try{
+    const ascii=field.getValue('ascii-math') || field.value; const latex=field.value;
+    const md=customModel(CUSTOM.kind,ascii); md.an=analyze(md); EM=md; CUSTOM.active=true; CUSTOM.expr=ascii; CUSTOM.latex=latex;
+    document.querySelectorAll('#presets .chip').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.custom==='1')));
+    const [a,b]=EM.domain; xs.min=a; xs.max=b; xs.step=(b-a)/1000;
+    const set=symbolicSet(CUSTOM.kind,ascii,latex); renderCustomFormulas(set);
+    $('#note').innerHTML=`פונקציה אישית שהוזנה ידנית. שלושת הגרפים וכל טבלת הקשרים מחושבים עבורה באותו מנגנון של שאר האפליקציה.${CUSTOM.kind!=='f'?' קבועי האינטגרציה נבחרו כך שהפונקציות הקדומות עוברות דרך 0 כשאפשר.':''}`;
+    msg.textContent='הפונקציה נטענה בהצלחה.'; $('#customBox').hidden=true; setX(a+(b-a)*0.12);
+  }catch(err){ msg.textContent=err.message||'לא הצלחתי לקרוא את הביטוי.'; msg.classList.add('err'); }
+}
+
+/* ================= פולינומים (מקדמים מהחזקה הנמוכה) ================= */
+const P = {
+  ev(c,x){ let s=0; for(let i=c.length-1;i>=0;i--) s=s*x+c[i]; return s; },
+  d(c){ return c.slice(1).map((v,i)=>v*(i+1)); },
+  int(c){ return [0, ...c.map((v,i)=>v/(i+1))]; },
+  mul(a,b){ const r=Array(a.length+b.length-1).fill(0); a.forEach((x,i)=>b.forEach((y,j)=>r[i+j]+=x*y)); return r; },
+  fromRoots(rs,k=1){ let c=[k]; rs.forEach(r=>c=P.mul(c,[-r,1])); return c; }
+};
+function polyModel(fc, domain){
+  const d1=P.d(fc), d2=P.d(d1);
+  return { f:x=>P.ev(fc,x), d1:x=>P.ev(d1,x), d2:x=>P.ev(d2,x), domain };
+}
+// בונה f מתוך f′ (אינטגרל), ובוחר קבוע שממרכז את הגרף סביב ציר x
+function fromDeriv(d1c, domain){
+  const fc=P.int(d1c); let lo=Infinity, hi=-Infinity;
+  for(let i=0;i<=400;i++){ const v=P.ev(fc, domain[0]+i*(domain[1]-domain[0])/400); lo=Math.min(lo,v); hi=Math.max(hi,v); }
+  fc[0] = -(lo+hi)/2;
+  return polyModel(fc, domain);
+}
+
+/* ================= ניתוח: אפסים, החלפת סימן, תחומי סימן ================= */
+function findRoots(g, a, b){
+  const N=2200, h=(b-a)/N, v=[]; let mx=0;
+  for(let i=0;i<=N;i++){ let y; try{y=g(a+i*h)}catch{y=NaN} v.push(y); if(Number.isFinite(y)) mx=Math.max(mx,Math.abs(y)); }
+  const xs=[];
+  // חציית ציר (החלפת סימן) – חצייה
+  for(let i=0;i<N;i++){
+    if(v[i]*v[i+1] < 0){
+      let lo=a+i*h, hi=lo+h, glo=v[i];
+      for(let k=0;k<70;k++){ const md=(lo+hi)/2, gm=g(md); if(gm===0){lo=hi=md;break;} if(gm*glo<0) hi=md; else { lo=md; glo=gm; } }
+      xs.push((lo+hi)/2);
+    }
+  }
+  // אפס מדויק בדגימה, או נגיעה בציר (מינימום של |g| שערכו 0)
+  for(let i=1;i<N;i++){
+    if(v[i]===0){ xs.push(a+i*h); continue; }
+    const A=Math.abs(v[i-1]), B=Math.abs(v[i]), C=Math.abs(v[i+1]);
+    if(B<=A && B<=C && Math.sign(v[i-1])===Math.sign(v[i]) && Math.sign(v[i])===Math.sign(v[i+1])){
+      let lo=a+(i-1)*h, hi=a+(i+1)*h; const gr=(Math.sqrt(5)-1)/2;
+      for(let k=0;k<90;k++){ const x1=hi-gr*(hi-lo), x2=lo+gr*(hi-lo); if(Math.abs(g(x1))<Math.abs(g(x2))) hi=x2; else lo=x1; }
+      const xm=(lo+hi)/2; if(Math.abs(g(xm)) < mx*1e-6) xs.push(xm);
+    }
+  }
+  xs.sort((p,q)=>p-q);
+  const span=b-a, out=[];
+  xs.forEach(x=>{ if(out.length && Math.abs(out[out.length-1].x-x) < span*1e-4) return; out.push({x: Math.abs(x-Math.round(x))<1e-7 ? Math.round(x) : x}); });
+  const d=span*2e-3;
+  out.forEach(r=>{ const sl=Math.sign(g(r.x-d)), sr=Math.sign(g(r.x+d)); r.type = sl!==sr ? 'cross' : 'touch'; r.dir = sl>0 ? '+-' : '-+'; });
+  return out;
+}
+function signSegs(g, roots, a, b){
+  const bs=[a, ...roots.map(r=>r.x), b], out=[];
+  for(let i=0;i<bs.length-1;i++){
+    if(bs[i+1]-bs[i] < 1e-9) continue;
+    const s=Math.sign(g((bs[i]+bs[i+1])/2)), last=out[out.length-1];
+    if(last && last.s===s) last.b=bs[i+1]; else out.push({a:bs[i], b:bs[i+1], s});
+  }
+  return out;
+}
+function analyze(m){
+  const [a,b]=m.domain, r1=findRoots(m.d1,a,b), r2=findRoots(m.d2,a,b);
+  return { r1, r2, s1:signSegs(m.d1,r1,a,b), s2:signSegs(m.d2,r2,a,b) };
+}
+
+/* ================= ציור גרף ================= */
+const GEO = new WeakMap();
+function nice(span, n){ const raw=span/n, p=Math.pow(10,Math.floor(Math.log10(raw))), q=raw/p; return (q<1.5?1:q<3?2:q<7?5:10)*p; }
+function tick(v, st){ if(Math.abs(v) < st*1e-6) return '0'; const d = st<1 ? Math.ceil(-Math.log10(st)-1e-9) : 0; return v.toFixed(d).replace('-','−'); }
+
+function draw(cv, o){
+  const W=cv.clientWidth, H=cv.clientHeight; if(!W || !H) return;
+  const dpr=window.devicePixelRatio||1;
+  cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+  const c=cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,W,H);
+  const cs=getComputedStyle(document.documentElement), C=n=>cs.getPropertyValue('--'+n).trim();
+  const [a,b]=o.domain, L=44, R=12, T=14, B=24, pw=W-L-R, ph=H-T-B;
+  const N=Math.max(240, Math.round(pw)), ys=[]; let lo=Infinity, hi=-Infinity;
+  for(let i=0;i<=N;i++){ const y=o.g(a+(b-a)*i/N); ys.push(y); if(isFinite(y)){ lo=Math.min(lo,y); hi=Math.max(hi,y); } }
+  lo=Math.min(lo,0); hi=Math.max(hi,0);
+  if(hi-lo < 1e-9){ hi+=1; lo-=1; }
+  const pad=(hi-lo)*0.1; lo-=pad; hi+=pad;
+  const X=x=>L+(x-a)/(b-a)*pw, Y=y=>T+(hi-y)/(hi-lo)*ph;
+  GEO.set(cv, {L,R,a,b});
+  c.direction='ltr';
+
+  (o.shade||[]).forEach(s=>{ c.fillStyle=C(s.kind); c.fillRect(X(s.a),T,X(s.b)-X(s.a),ph); });
+
+  // רשת וסימונים
+  c.strokeStyle=C('grid'); c.lineWidth=1; c.fillStyle=C('muted'); c.font='12px Rubik, Arial, sans-serif';
+  const xst=nice(b-a,8); c.textAlign='center'; c.textBaseline='alphabetic';
+  for(let x=Math.ceil(a/xst)*xst; x<=b+1e-9; x+=xst){ const px=Math.round(X(x))+.5; c.beginPath(); c.moveTo(px,T); c.lineTo(px,T+ph); c.stroke(); c.fillText(tick(x,xst),X(x),H-7); }
+  const yst=nice(hi-lo, ph>150?5:4); c.textAlign='right'; c.textBaseline='middle';
+  for(let y=Math.ceil(lo/yst)*yst; y<=hi; y+=yst){ const py=Math.round(Y(y))+.5; c.beginPath(); c.moveTo(L,py); c.lineTo(L+pw,py); c.stroke(); c.fillText(tick(y,yst),L-6,py); }
+
+  // צירים
+  c.strokeStyle=C('axis'); c.lineWidth=1.4;
+  c.beginPath(); c.moveTo(L,Y(0)); c.lineTo(L+pw,Y(0)); c.stroke();
+  if(a<0 && b>0){ c.beginPath(); c.moveTo(X(0),T); c.lineTo(X(0),T+ph); c.stroke(); }
+
+  // קווים אנכיים מקווקווים
+  (o.vlines||[]).forEach(v=>{ const it=typeof v==='number'?{x:v}:v; c.setLineDash(it.dash||[5,4]); c.strokeStyle=C(it.c||'muted'); c.lineWidth=1.3; c.beginPath(); c.moveTo(X(it.x),T); c.lineTo(X(it.x),T+ph); c.stroke(); });
+  c.setLineDash([]);
+
+  // סימני + / − ליד הציר
+  if(o.signs){
+    c.font='700 16px Rubik, Arial, sans-serif'; c.textAlign='center'; c.textBaseline='middle';
+    o.signs.forEach(s=>{ if(!s.s) return; const x1=X(s.a), x2=X(s.b); if(x2-x1<24) return; c.fillStyle=C(s.s>0?'posInk':'negInk'); c.fillText(s.s>0?'+':'−',(x1+x2)/2,clamp(Y(0)+(s.s>0?-13:13),T+9,T+ph-9)); });
+  }
+  // סימלים בראש תחום (↗ ↘ ∪ ∩)
+  (o.glyphs||[]).forEach(g=>{ const x1=X(g.a), x2=X(g.b); if(x2-x1<26) return; c.font='500 19px "STIX Two Text", "Times New Roman", serif'; c.fillStyle=C('ink'); c.textAlign='center'; c.textBaseline='top'; c.fillText(g.t,(x1+x2)/2,T+3); });
+
+  c.save(); c.beginPath(); c.rect(L,T,pw,ph); c.clip();
+  if(o.tangent!=null && o.slope){
+    const x0=o.tangent, y0=o.g(x0), k=o.slope(x0), w=(b-a)*0.16;
+    c.strokeStyle=C('tan'); c.lineWidth=1.7; c.setLineDash(o.tanDash?[6,4]:[]);
+    c.beginPath(); c.moveTo(X(x0-w),Y(y0-k*w)); c.lineTo(X(x0+w),Y(y0+k*w)); c.stroke(); c.setLineDash([]);
+  }
+  c.strokeStyle=C(o.color||'ink'); c.lineWidth=2.6; c.lineJoin='round'; c.beginPath();
+  let pen=false, prevY=null;
+  ys.forEach((y,i)=>{
+    const px=L+pw*i/N;
+    if(!Number.isFinite(y)){ pen=false; prevY=null; return; }
+    const py=Y(clamp(y,lo-(hi-lo),hi+(hi-lo)));
+    // לא מחברים משני צדי אסימפטוטה/קפיצה עצומה.
+    const jump=prevY!=null && Math.abs(y-prevY)>(hi-lo)*1.8;
+    if(!pen||jump)c.moveTo(px,py); else c.lineTo(px,py);
+    pen=true; prevY=y;
+  });
+  c.stroke(); c.restore();
+
+  if(o.cursor!=null){
+    const px=X(o.cursor); c.strokeStyle=C('accent'); c.lineWidth=1.5; c.globalAlpha=.75;
+    c.beginPath(); c.moveTo(px,T); c.lineTo(px,T+ph); c.stroke(); c.globalAlpha=1;
+    let cy; try{cy=o.g(o.cursor)}catch{cy=NaN}
+    if(Number.isFinite(cy)){ c.beginPath(); c.arc(px,Y(cy),5.5,0,7); c.fillStyle=C('panel'); c.fill(); c.lineWidth=2.5; c.strokeStyle=C(o.color); c.stroke(); }
+  }
+  (o.pts||[]).forEach(p=>{
+    const px=X(p.x), py=Y(p.y!=null?p.y:o.g(p.x)), col=C(p.color||o.color||'ink');
+    c.beginPath(); c.arc(px,py,5.5,0,7); c.fillStyle=col; c.fill(); c.lineWidth=2; c.strokeStyle=C('panel'); c.stroke();
+    if(p.label){
+      c.font='500 13px Rubik, Arial, sans-serif'; c.direction='rtl'; c.textAlign='center'; c.textBaseline='middle';
+      const ly = py-15 < T+8 ? py+17 : py-15;
+      c.lineWidth=4; c.strokeStyle=C('panel'); c.strokeText(p.label,px,ly); c.fillStyle=C('ink'); c.fillText(p.label,px,ly); c.direction='ltr';
+    }
+  });
+}
+
+/* ================= חקירה ================= */
+const PRESETS = [
+  { chip:'מדף העבודה', fml:`f′(x) = (x − 2)(x − 4)(x − 6)<sup>2</sup>`,
+    note:`הפונקציה מהדף: ${mt('f′')} מתאפסת ב־${mt('x = 2, 4, 6')}. בשתי הראשונות היא מחליפה סימן (קיצון), וב־${mt('x = 6')} היא רק נוגעת בציר (פיתול עם שיפוע 0).`,
+    make:()=>fromDeriv(P.fromRoots([2,4,6,6]),[1.6,6.8]) },
+  { chip:mt('x<sup>3</sup> − 3x'), fml:`f(x) = x<sup>3</sup> − 3x`,
+    note:`מקסימום, מינימום, וביניהם נקודת פיתול אחת, בדיוק היכן ש־${mt('f′')} מגיעה למינימום.`,
+    make:()=>polyModel([0,-3,0,1],[-2.4,2.4]) },
+  { chip:mt('x<sup>4</sup> − 4x<sup>2</sup>'), fml:`f(x) = x<sup>4</sup> − 4x<sup>2</sup>`,
+    note:`שתי נקודות מינימום ומקסימום אחד. שתי נקודות הפיתול הן נקודות הקיצון של ${mt('f′')}.`,
+    make:()=>polyModel([0,0,-4,0,1],[-2.3,2.3]) },
+  { chip:mt('x<sup>3</sup>'), fml:`f(x) = x<sup>3</sup>`,
+    note:`${mt('f′')} נוגעת בציר x ב־${mt('x = 0')} ולא מחליפה סימן: אין קיצון, אבל יש פיתול עם משיק אופקי.`,
+    make:()=>polyModel([0,0,0,1],[-1.8,1.8]) },
+  { chip:mt('x<sup>4</sup>'), fml:`f(x) = x<sup>4</sup>`,
+    note:`מלכודת: ${mt('f″(0) = 0')}, אבל ${mt('f″')} לא מחליפה סימן, ולכן ב־${mt('x = 0')} אין נקודת פיתול (יש מינימום).`,
+    make:()=>polyModel([0,0,0,0,1],[-1.6,1.6]) },
+  { chip:mt('sin x'), fml:`f(x) = sin x`,
+    note:`${mt('f′(x) = cos x')} ו־${mt('f″(x) = −sin x')}: כל גרף הוא הזזה של הקודם ברבע מחזור.`,
+    make:()=>({ f:Math.sin, d1:Math.cos, d2:x=>-Math.sin(x), domain:[-0.6, 2*Math.PI+0.6] }) },
+];
+
+const ROWS = [
+  { id:'ext',  f:'נקודת קיצון', d1:'חיתוך עם ציר x<br><span class="hint">(עם החלפת סימן)</span>', d2:'',
+    note:`בנקודת קיצון של ${mt('f')} השיפוע הוא 0, ולכן ${mt('f′')} חותכת את ציר x ומחליפה סימן. מ־+ ל־− : מקסימום. מ־− ל־+ : מינימום.` },
+  { id:'inc',  f:'תחום עלייה', d1:'תחום חיוביות<br><span class="hint">(מעל ציר x)</span>', d2:'',
+    note:`היכן ש־${mt('f')} עולה, השיפוע שלה חיובי, ולכן גרף ${mt('f′')} נמצא מעל ציר x.` },
+  { id:'dec',  f:'תחום ירידה', d1:'תחום שליליות<br><span class="hint">(מתחת לציר x)</span>', d2:'',
+    note:`היכן ש־${mt('f')} יורדת, השיפוע שלה שלילי, ולכן גרף ${mt('f′')} נמצא מתחת לציר x.` },
+  { id:'infl', f:'נקודת פיתול', d1:'נקודת קיצון', d2:'חיתוך עם ציר x<br><span class="hint">(עם החלפת סימן)</span>',
+    note:`בנקודת פיתול ${mt('f')} משנה את כיוון הקעירות. שם ${mt('f′')} מגיעה לקיצון, ו־${mt('f″')} חותכת את ציר x.` },
+  { id:'cup',  f:'קעורה כלפי מעלה ∪', d1:'תחום עלייה', d2:'תחום חיוביות',
+    note:`קעורה כלפי מעלה: השיפוע של ${mt('f')} הולך וגדל, כלומר ${mt('f′')} עולה, ולכן ${mt('f″')} חיובית.` },
+  { id:'cap',  f:'קעורה כלפי מטה ∩', d1:'תחום ירידה', d2:'תחום שליליות',
+    note:`קעורה כלפי מטה: השיפוע של ${mt('f')} הולך וקטן, כלומר ${mt('f′')} יורדת, ולכן ${mt('f″')} שלילית.` },
+];
+
+const S = { p:0, x:0, hl:null, tan:true, snap:null };
+let EM;
+const cF=$('#cF'), cD1=$('#cD1'), cD2=$('#cD2'), xs=$('#xs');
+
+function buildExplore(){
+  const customBtn=el('button','chip','+ פונקציה אישית'); customBtn.dataset.custom='1'; customBtn.setAttribute('aria-pressed','false');
+  customBtn.onclick=()=>{ const box=$('#customBox'); box.hidden=!box.hidden; if(!box.hidden) setTimeout(()=>$('#customExpr').focus(),0); };
+  $('#presets').append(customBtn);
+  buildMathKeyboard();
+  PRESETS.forEach((p,i)=>{
+    const b=el('button','chip',p.chip); b.setAttribute('aria-pressed', i===0?'true':'false');
+    b.onclick=()=>{ document.querySelectorAll('#presets .chip').forEach(x=>x.setAttribute('aria-pressed',String(x===b))); $('#customBox').hidden=true; setPreset(i); };
+    $('#presets').append(b);
+  });
+  const body=$('#relBody');
+  ROWS.forEach(r=>{
+    const tr=el('tr','row'); tr.tabIndex=0; tr.setAttribute('role','button'); tr.setAttribute('aria-pressed','false'); tr.dataset.id=r.id;
+    tr.innerHTML=`<td>${r.f}</td><td class="arr">⟷</td><td>${r.d1}</td><td class="arr">${r.d2?'⟷':''}</td><td>${r.d2}</td>`;
+    const act=()=>{ S.hl = S.hl===r.id ? null : r.id; body.querySelectorAll('tr').forEach(t=>t.setAttribute('aria-pressed',String(t.dataset.id===S.hl))); $('#hlNote').innerHTML = S.hl ? r.note : ''; renderExplore(); };
+    tr.onclick=act; tr.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); act(); } };
+    body.append(tr);
+  });
+  $('#tan').onchange=e=>{ S.tan=e.target.checked; renderExplore(); };
+  xs.oninput=()=>setX(+xs.value);
+  [cF,cD1,cD2].forEach(cv=>{
+    const move=e=>{ const g=GEO.get(cv); if(!g) return; const r=cv.getBoundingClientRect(); setX(g.a+(e.clientX-r.left-g.L)/(r.width-g.L-g.R)*(g.b-g.a)); };
+    cv.addEventListener('pointerdown',e=>{ cv.setPointerCapture(e.pointerId); move(e); });
+    cv.addEventListener('pointermove',e=>{ if(cv.hasPointerCapture(e.pointerId)) move(e); });
+  });
+  setPreset(0);
+}
+function setPreset(i){
+  CUSTOM.active=false; S.p=i; EM=PRESETS[i].make(); EM.an=analyze(EM);
+  const [a,b]=EM.domain;
+  xs.min=a; xs.max=b; xs.step=(b-a)/1000;
+  $('#fml').className='fml'; $('#fml').innerHTML=mt(PRESETS[i].fml); $('#note').innerHTML=PRESETS[i].note;
+  setX(a+(b-a)*0.12);
+}
+function setX(x){
+  const [a,b]=EM.domain; x=clamp(x,a,b);
+  const tol=(b-a)*0.013; let best=null;
+  [...EM.an.r1, ...EM.an.r2].forEach(r=>{ if(Math.abs(r.x-x)<tol && (best===null || Math.abs(r.x-x)<Math.abs(best-x))) best=r.x; });
+  S.snap=best; S.x = best ?? x; xs.value=S.x;
+  renderExplore();
+}
+function hlCfg(){
+  const an=EM.an, F={}, D1={}, D2={};
+  const ext=an.r1.filter(r=>r.type==='cross'), infl=an.r2.filter(r=>r.type==='cross');
+  const band=(segs,s)=>segs.filter(q=>q.s===s).map(q=>({a:q.a,b:q.b,kind:s>0?'pos':'neg'}));
+  const glyph=(arr,t)=>arr.map(s=>({a:s.a,b:s.b,t}));
+  switch(S.hl){
+    case 'ext':
+      F.pts=ext.map(r=>({x:r.x,label:r.dir==='+-'?'מקסימום':'מינימום'})); D1.pts=ext.map(r=>({x:r.x,y:0}));
+      F.vlines=D1.vlines=D2.vlines=ext.map(r=>r.x); break;
+    case 'inc': case 'dec': {
+      const s=S.hl==='inc'?1:-1, bd=band(an.s1,s);
+      F.shade=D1.shade=bd; F.glyphs=glyph(bd, s>0?'↗':'↘'); break; }
+    case 'infl':
+      F.pts=infl.map(r=>({x:r.x,label:'פיתול'})); D1.pts=infl.map(r=>({x:r.x,label:r.dir==='+-'?'מקסימום':'מינימום'})); D2.pts=infl.map(r=>({x:r.x,y:0}));
+      F.vlines=D1.vlines=D2.vlines=infl.map(r=>r.x); break;
+    case 'cup': case 'cap': {
+      const s=S.hl==='cup'?1:-1, bd=band(an.s2,s);
+      F.shade=D1.shade=D2.shade=bd; F.glyphs=glyph(bd, s>0?'∪':'∩'); D1.glyphs=glyph(bd, s>0?'↗':'↘'); break; }
+  }
+  return {F,D1,D2};
+}
+function renderExplore(){
+  if($('#explore').hidden) return;
+  const cfg=hlCfg(), x=S.x, base={domain:EM.domain, cursor:x};
+  draw(cF, {...base, g:EM.f, slope:EM.d1, color:'cf', tangent:S.tan?x:null, ...cfg.F});
+  draw(cD1,{...base, g:EM.d1, slope:EM.d2, color:'cd1', tangent:S.tan?x:null, signs:EM.an.s1, ...cfg.D1});
+  draw(cD2,{...base, g:EM.d2, color:'cd2', signs:EM.an.s2, ...cfg.D2});
+  readout();
+}
+function readout(){
+  const x=S.x, v1=EM.d1(x), v2=EM.d2(x);
+  const at1=EM.an.r1.find(r=>r.x===S.snap), at2=EM.an.r2.find(r=>r.x===S.snap);
+  const trend = at1 ? 'שיפוע 0' : v1>0 ? 'עולה' : 'יורדת';
+  const conc  = at2 ? `${mt('f″ = 0')}` : v2>0 ? 'קעורה כלפי מעלה ∪' : 'קעורה כלפי מטה ∩';
+  const t1 = at1 ? `אפס ⇐ משיק אופקי ל־${mt('f')}` : v1>0 ? `חיובית ⇐ ${mt('f')} עולה` : `שלילית ⇐ ${mt('f')} יורדת`;
+  const t2 = at2 ? 'אפס' : v2>0 ? `חיובית ⇐ ${mt('f′')} עולה ⇐ ${mt('f')} קעורה ∪` : `שלילית ⇐ ${mt('f′')} יורדת ⇐ ${mt('f')} קעורה ∩`;
+  const row=(col,lab,val,txt)=>`<div class="ro"><span class="dot" style="background:var(--${col})"></span>${mt(lab+' = '+val)}<span class="rt">${txt}</span></div>`;
+  let h=`<div class="rx">${mt('x = '+fmt(x))}</div>`;
+  h+=row('cf','f(x)',fmt(EM.f(x)),`${trend}, ${conc}`);
+  h+=row('cd1','f′(x)',fmt(v1),t1);
+  h+=row('cd2','f″(x)',fmt(v2),t2);
+  const feats=[];
+  if(at1) feats.push(at1.type==='cross'
+    ? `${mt('f′')} מתאפסת ומחליפה סימן מ־${at1.dir==='+-'?'+ ל־−':'− ל־+'}, ולכן זו נקודת <strong>${at1.dir==='+-'?'מקסימום':'מינימום'}</strong> של ${mt('f')}.`
+    : `${mt('f′')} מתאפסת אבל <strong>לא</strong> מחליפה סימן, ולכן אין כאן קיצון של ${mt('f')}.`);
+  if(at2) feats.push(at2.type==='cross'
+    ? `${mt('f″')} מתאפסת ומחליפה סימן: זו <strong>נקודת פיתול</strong> של ${mt('f')} ונקודת קיצון של ${mt('f′')}.`
+    : `${mt('f″')} מתאפסת אבל <strong>לא</strong> מחליפה סימן, ולכן אין כאן נקודת פיתול.`);
+  h+= feats.length ? `<div class="feat">${feats.map(t=>`<p>${t}</p>`).join('')}</div>`
+                   : `<div class="feat empty"><p>קרבו את הקו לנקודה מיוחדת והוא ייצמד אליה.</p></div>`;
+  $('#readout').innerHTML=h;
+}
+
+/* ================= תרגול ================= */
+const QTYPES = [
+  {id:'mix', t:'מעורב'},
+  {id:'id',  t:'איזה גרף הוא מה?'},
+  {id:'pt',  t:`מ־${mt('f′')} לנקודה של ${mt('f')}`},
+  {id:'int', t:`מ־${mt('f′')} לתחום של ${mt('f')}`},
+  {id:'rev', t:`מ־${mt('f')} לסימני הנגזרות`},
+];
+const Q = { type:'mix', cur:null, right:0, total:0 };
+
+function genModel(kind){
+  let roots, dom;
+  if(kind==='c3'){ const r1=ri(-4,-2), r2=r1+ri(2,3), r3=r2+ri(2,3); roots=[r1,r2,r3]; dom=[r1-1.1, r3+1.1]; }
+  else if(kind==='dbl'){ const r=ri(-2,2), s=r+pick([-1,1])*ri(2,4); roots=[r,r,s]; dom=[Math.min(r,s)-1.3, Math.max(r,s)+1.3]; }
+  else { const r1=ri(-3,0), r2=r1+ri(2,5); roots=[r1,r2]; dom=[r1-1.6, r2+1.6]; }
+  const md=fromDeriv(P.fromRoots(roots, pick([1,-1])), dom); md.an=analyze(md); return md;
+}
+function addGraph(parent, labelHTML, optsFn){
+  const box=el('div','gbox'); box.innerHTML=`<span class="gname">${labelHTML}</span>`;
+  const cv=document.createElement('canvas'); box.append(cv); parent.append(box);
+  Q.cur.draws.push(()=>draw(cv, optsFn()));
+}
+function updScore(){ $('#score').textContent=`נכון: ${Q.right} מתוך ${Q.total}`; }
+function finish(card, ok, html, reveal){
+  card.append(el('div','fb'+(ok?'':' no'),`<strong>${ok?'נכון.':'לא בדיוק.'}</strong> ${html}`));
+  if(reveal){ const rv=el('div','reveal'); card.append(rv); reveal(rv); }
+  const nb=el('button','primary','לשאלה הבאה'); nb.onclick=newQ; card.append(nb);
+  redrawQ(); nb.focus({preventScroll:true});
+}
+function mc(card, options, correct, onAnswer){
+  const box=el('div','opts'); card.append(box);
+  options.forEach(o=>{
+    const b=el('button','opt',o.html); b.dataset.k=o.k;
+    b.onclick=()=>{
+      if(Q.cur.done) return; Q.cur.done=true;
+      const ok=o.k===correct; Q.total++; if(ok) Q.right++; updScore();
+      box.querySelectorAll('.opt').forEach(x=>{ x.disabled=true; if(x.dataset.k===correct) x.classList.add('ok'); });
+      if(!ok) b.classList.add('bad');
+      onAnswer(ok);
+    };
+    box.append(b);
+  });
+}
+const CONC_OPTS = [
+  {k:'1,1',  html:'עולה, וקעורה כלפי מעלה ∪'},
+  {k:'1,-1', html:'עולה, וקעורה כלפי מטה ∩'},
+  {k:'-1,1', html:'יורדת, וקעורה כלפי מעלה ∪'},
+  {k:'-1,-1',html:'יורדת, וקעורה כלפי מטה ∩'},
+];
+
+const GEN = {
+  /* --- זיהוי שלושת הגרפים --- */
+  id(){
+    const md=genModel(pick(['c3','q2','dbl'])), roles=shuffle(['f','d1','d2']), sel=[null,null,null];
+    const names=['א','ב','ג'], lbl={f:'f(x)',d1:'f′(x)',d2:'f″(x)'}, fn={f:md.f,d1:md.d1,d2:md.d2}, col={f:'cf',d1:'cd1',d2:'cd2'};
+    let checked=false;
+    return {
+      prompt:`שלושת הגרפים הם ${mt('f(x)')}, ${mt('f′(x)')} ו־${mt('f″(x)')} של אותה פונקציה, בסדר אקראי. התאימו לכל גרף את התפקיד שלו.`,
+      build(card){
+        const gw=el('div','qgraphs three'); card.append(gw);
+        const vl1=md.an.r1.filter(r=>r.type==='cross').map(r=>({x:r.x,c:'cd1',dash:[9,5]}));
+        const vl2=md.an.r2.filter(r=>r.type==='cross').map(r=>({x:r.x,c:'cd2',dash:[2,4]}));
+        const heads=[];
+        roles.forEach((role,i)=>{
+          const box=el('div','qg'), h=el('div','qgt',`גרף ${names[i]}`), cv=document.createElement('canvas'), rs=el('div','roles');
+          ['f','d1','d2'].forEach(k=>{
+            const b=el('button','chip',mt(lbl[k])); b.setAttribute('aria-pressed','false'); b.setAttribute('aria-label',`גרף ${names[i]}: ${lbl[k]}`);
+            b.onclick=()=>{ if(checked) return; sel[i]=k; rs.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',String(x===b))); };
+            rs.append(b);
+          });
+          box.append(h,cv,rs); gw.append(box); heads.push(h);
+          Q.cur.draws.push(()=>draw(cv,{g:fn[role], domain:md.domain, color:checked?col[role]:'ink', vlines:checked?[...vl1,...vl2]:[]}));
+        });
+        const chk=el('button','primary','בדיקה'), warn=el('p','qwarn'); card.append(chk,warn);
+        chk.onclick=()=>{
+          if(checked) return;
+          if(sel.includes(null)){ warn.textContent='בחרו תפקיד לכל אחד משלושת הגרפים.'; return; }
+          if(new Set(sel).size<3){ warn.textContent='כל תפקיד מופיע פעם אחת בדיוק.'; return; }
+          checked=true; Q.cur.done=true; warn.remove(); chk.remove();
+          const ok=sel.every((s,i)=>s===roles[i]); Q.total++; if(ok) Q.right++; updScore();
+          heads.forEach((h,i)=>{ h.innerHTML=`גרף ${names[i]}: ${mt(lbl[roles[i]])} ${sel[i]===roles[i]?'✓':'✗'}`; });
+          finish(card, ok, `איך מזהים: בכל נקודת קיצון של ${mt('f')}, גרף ${mt('f′')} חותך את ציר x (קו מקווקו ארוך). בכל נקודת קיצון של ${mt('f′')}, גרף ${mt('f″')} חותך את ציר x (קו מקווקו קצר). כלומר: חפשו גרף שנקודות הקיצון שלו נופלות בדיוק על נקודות החיתוך של גרף אחר עם ציר x. הראשון הוא הפונקציה, והשני הוא הנגזרת שלה.`);
+        };
+      }
+    };
+  },
+
+  /* --- מגרף f′: מה יש ל-f בנקודה A --- */
+  pt(){
+    let md, c;
+    for(let t=0;t<60;t++){
+      md=genModel(pick(['c3','dbl'])); const an=md.an, [a,b]=md.domain, span=b-a;
+      const C={max:[],min:[],infl:[],none:[]};
+      an.r1.forEach(r=>{ if(r.type==='cross') C[r.dir==='+-'?'max':'min'].push({x:r.x,why:r.dir==='+-'?'max':'min'}); else C.infl.push({x:r.x,why:'touch'}); });
+      an.r2.filter(r=>r.type==='cross' && !an.r1.some(q=>Math.abs(q.x-r.x)<1e-6*span)).forEach(r=>C.infl.push({x:r.x,why:'ext1'}));
+      const all=[...an.r1,...an.r2];
+      for(let j=0;j<300;j++){ const x=a+span*(.08+.84*Math.random()); if(all.every(r=>Math.abs(r.x-x)>.09*span)){ C.none.push({x,why:'none'}); break; } }
+      const keys=Object.keys(C).filter(k=>C[k].length); if(keys.length<3) continue;
+      c=pick(C[pick(keys)]); break;
+    }
+    const ans = c.why==='touch'||c.why==='ext1' ? 'infl' : c.why;
+    const up = md.d1(c.x)>0;
+    const why = {
+      max:`ב־A גרף ${mt('f′')} חותך את ציר x ועובר מחיובי (מעל הציר) לשלילי (מתחת לציר). ${mt('f')} עוברת מעלייה לירידה ⇐ מקסימום.`,
+      min:`ב־A גרף ${mt('f′')} חותך את ציר x ועובר משלילי (מתחת לציר) לחיובי (מעל הציר). ${mt('f')} עוברת מירידה לעלייה ⇐ מינימום.`,
+      touch:`ב־A גרף ${mt('f′')} נוגע בציר x אבל לא חוצה אותו: ${mt('f′')} לא מחליפה סימן, ולכן ${mt('f')} ממשיכה באותה מגמה ואין קיצון. בנוסף, A היא נקודת קיצון של ${mt('f′')}, ולכן זו נקודת פיתול של ${mt('f')} (עם משיק אופקי).`,
+      ext1:`ב־A יש ל־${mt('f′')} נקודת קיצון, אבל היא לא מתאפסת שם. כלומר ${mt('f″')} מחליפה סימן, והקעירות של ${mt('f')} מתהפכת ⇐ נקודת פיתול.`,
+      none:`ב־A הנגזרת ${mt('f′')} ${up?'חיובית':'שלילית'} (לא 0), וגם אין שם קיצון של ${mt('f′')}. לכן ${mt('f')} פשוט ${up?'עולה':'יורדת'} בנקודה הזאת, בלי קיצון ובלי פיתול.`
+    }[c.why];
+    return {
+      prompt:`לפניכם רק גרף הנגזרת ${mt('f′(x)')}. מה יש לפונקציה ${mt('f(x)')} בערך ה־x של הנקודה A?`,
+      build(card){
+        addGraph(card, mt('f′(x)'), ()=>({g:md.d1, domain:md.domain, color:'cd1', pts:[{x:c.x,label:'A'}], vlines:[c.x]}));
+        mc(card, [
+          {k:'max', html:`נקודת מקסימום של ${mt('f')}`},
+          {k:'min', html:`נקודת מינימום של ${mt('f')}`},
+          {k:'infl',html:`נקודת פיתול של ${mt('f')}`},
+          {k:'none',html:'אף אחת מאלה'},
+        ], ans, ok=>finish(card, ok, why, rv=>{
+          rv.append(el('div','rlab',`כך נראה ${mt('f(x)')} עצמו:`));
+          addGraph(rv, mt('f(x)'), ()=>({g:md.f, domain:md.domain, color:'cf', pts:[{x:c.x,label:'A'}], vlines:[c.x]}));
+        }));
+      }
+    };
+  },
+
+  /* --- מגרף f′: מה נכון על f בתחום המסומן --- */
+  int(){
+    const md=genModel(pick(['c3','dbl','q2'])), [a,b]=md.domain, span=b-a;
+    const bs=[a, ...md.an.r1.map(r=>r.x), ...md.an.r2.map(r=>r.x), b].sort((p,q)=>p-q);
+    const sg=[]; for(let i=0;i<bs.length-1;i++) if(bs[i+1]-bs[i] > .08*span) sg.push([bs[i],bs[i+1]]);
+    const [p,q]=pick(sg), mid=(p+q)/2, s1=Math.sign(md.d1(mid)), s2=Math.sign(md.d2(mid));
+    const shade=[{a:p,b:q,kind:'band'}];
+    const why=`בתחום המסומן גרף ${mt('f′')} נמצא ${s1>0?'מעל ':'מתחת ל'}ציר x ⇐ ${mt('f′')} ${s1>0?'חיובית':'שלילית'} ⇐ ${mt('f')} ${s1>0?'עולה':'יורדת'}. בנוסף, גרף ${mt('f′')} ${s2>0?'עולה':'יורד'} בתחום ⇐ ${mt(s2>0?'f″ &gt; 0':'f″ &lt; 0')} ⇐ ${mt('f')} קעורה כלפי ${s2>0?'מעלה ∪':'מטה ∩'}.`;
+    return {
+      prompt:`לפניכם רק גרף הנגזרת ${mt('f′(x)')}. מה נכון לגבי הפונקציה ${mt('f(x)')} בתחום המסומן?`,
+      build(card){
+        addGraph(card, mt('f′(x)'), ()=>({g:md.d1, domain:md.domain, color:'cd1', shade}));
+        mc(card, CONC_OPTS, s1+','+s2, ok=>finish(card, ok, why, rv=>{
+          rv.append(el('div','rlab',`כך נראה ${mt('f(x)')} באותו תחום:`));
+          addGraph(rv, mt('f(x)'), ()=>({g:md.f, domain:md.domain, color:'cf', shade}));
+        }));
+      }
+    };
+  },
+
+  /* --- מגרף f: סימני f′ ו-f″ בנקודה P --- */
+  rev(){
+    for(let t=0;t<60;t++){
+      const md=genModel(pick(['c3','q2','dbl'])), [a,b]=md.domain, span=b-a; let m1=0, m2=0;
+      for(let i=0;i<=300;i++){ const x=a+span*i/300; m1=Math.max(m1,Math.abs(md.d1(x))); m2=Math.max(m2,Math.abs(md.d2(x))); }
+      const all=[...md.an.r1, ...md.an.r2];
+      for(let j=0;j<300;j++){
+        const x=a+span*(.1+.8*Math.random());
+        if(all.every(r=>Math.abs(r.x-x)>.08*span) && Math.abs(md.d1(x))>.12*m1 && Math.abs(md.d2(x))>.25*m2) return mkRev(md,x);
+      }
+    }
+    return GEN.int();
+  },
+};
+function mkRev(md, x){
+  const s1=Math.sign(md.d1(x)), s2=Math.sign(md.d2(x));
+  const opt=(a,b)=>`${mt(`f′(P) ${a>0?'&gt;':'&lt;'} 0`)} ו־${mt(`f″(P) ${b>0?'&gt;':'&lt;'} 0`)}`;
+  const why=`בנקודה P הגרף ${s1>0?'עולה':'יורד'}, ולכן שיפוע המשיק ${s1>0?'חיובי':'שלילי'} ⇐ ${mt(s1>0?'f′(P) &gt; 0':'f′(P) &lt; 0')}. ליד P הגרף נמצא ${s2>0?'מעל המשיק':'מתחת למשיק'}, כלומר הוא קעור כלפי ${s2>0?'מעלה ∪':'מטה ∩'} ⇐ ${mt(s2>0?'f″(P) &gt; 0':'f″(P) &lt; 0')}.`;
+  return {
+    prompt:`לפניכם גרף הפונקציה ${mt('f(x)')} והמשיק לו בנקודה P. מה נכון?`,
+    build(card){
+      addGraph(card, mt('f(x)'), ()=>({g:md.f, slope:md.d1, domain:md.domain, color:'cf', tangent:x, tanDash:true, pts:[{x,label:'P'}]}));
+      mc(card, [{k:'1,1',html:opt(1,1)},{k:'1,-1',html:opt(1,-1)},{k:'-1,1',html:opt(-1,1)},{k:'-1,-1',html:opt(-1,-1)}], s1+','+s2,
+        ok=>finish(card, ok, why, rv=>{
+          rv.append(el('div','rlab',`הנגזרות באותו x:`));
+          addGraph(rv, mt('f′(x)'), ()=>({g:md.d1, domain:md.domain, color:'cd1', pts:[{x,label:'P'}], vlines:[x], signs:md.an.s1}));
+          addGraph(rv, mt('f″(x)'), ()=>({g:md.d2, domain:md.domain, color:'cd2', pts:[{x,label:'P'}], vlines:[x], signs:md.an.s2}));
+        }));
+    }
+  };
+}
+function newQ(){
+  const t = Q.type==='mix' ? pick(['id','pt','int','rev']) : Q.type;
+  Q.cur = { draws:[], done:false };
+  const g = GEN[t](); Object.assign(Q.cur, g);
+  const area=$('#qArea'); area.innerHTML='';
+  const card=el('div','panel qcard'); card.append(el('p','qprompt',g.prompt));
+  area.append(card); g.build(card); redrawQ();
+}
+function redrawQ(){ if(Q.cur && !$('#practice').hidden) Q.cur.draws.forEach(f=>f()); }
+function buildPractice(){
+  QTYPES.forEach(q=>{
+    const b=el('button','chip',q.t); b.setAttribute('aria-pressed', String(q.id===Q.type));
+    b.onclick=()=>{ Q.type=q.id; document.querySelectorAll('#qtypes .chip').forEach(x=>x.setAttribute('aria-pressed',String(x===b))); newQ(); };
+    $('#qtypes').append(b);
+  });
+}
+
+/* ================= לשוניות וציור מחדש ================= */
+function showTab(p){
+  $('#tabE').setAttribute('aria-selected',String(!p)); $('#tabP').setAttribute('aria-selected',String(p));
+  $('#explore').hidden=p; $('#practice').hidden=!p;
+  if(p && !Q.cur) newQ();
+  redrawAll();
+}
+$('#tabE').onclick=()=>showTab(false);
+$('#tabP').onclick=()=>showTab(true);
+function redrawAll(){ renderExplore(); redrawQ(); }
+let raf=0;
+new ResizeObserver(()=>{ cancelAnimationFrame(raf); raf=requestAnimationFrame(redrawAll); }).observe(document.body);
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redrawAll);
+new MutationObserver(redrawAll).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(redrawAll);
+
+buildExplore(); buildPractice();
+</script>
+</body>
+</html>
